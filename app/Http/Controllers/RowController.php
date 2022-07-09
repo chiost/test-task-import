@@ -3,39 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ImportRowsRequest;
-use App\Http\Requests\UpdateRowRequest;
+use App\Imports\RowsImport;
 use App\Models\Row;
+use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Excel;
 
 class RowController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function importForm()
-    {
-        //
+        return response()->json(
+            Row::query()
+                ->get(['id', 'name', 'date'])
+                ->groupBy('date')
+        );
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\ImportRowsRequest  $request
-     * @return \Illuminate\Http\Response
+     * @param ImportRowsRequest $request
+     * @return JsonResponse
      */
-    public function import(ImportRowsRequest $request)
+    public function import(ImportRowsRequest $request): JsonResponse
     {
-        //
+        \Excel::import(new RowsImport(), $request->file('file')->store('tmp'), readerType: Excel::XLSX);
+
+        return response()->json(
+            'ok'
+        );
     }
 }
